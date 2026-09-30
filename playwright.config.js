@@ -31,13 +31,25 @@ export default defineConfig({
 
 
  // reporter: [['html', { open: 'never' }]],
- reporter: [['html', { outputFolder: 'my-report' }]],
+//  reporter: [['html', { outputFolder: 'my-report' }]],
+//   use: {
+//     baseURL: process.env.BASE_URL || 'https://playwright.dev/',
+//     trace: 'on-first-retry',
+//     screenshot: 'only-on-failure',
+//     video: 'retain-on-failure',
+//   },
+
+  reporter: [
+    ['html', {
+      outputFolder: 'playwright-report',
+      open: 'never'
+    }]
+  ],
+
   use: {
-    baseURL: process.env.BASE_URL || 'https://playwright.dev/',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    baseURL: '...',
   },
+
   projects: [
     {
       name: 'chromium',
