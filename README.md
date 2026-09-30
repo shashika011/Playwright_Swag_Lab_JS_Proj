@@ -1,3 +1,12 @@
+# Playwright Automation Framework
+
+A scalable **Playwright JavaScript automation framework** designed for web UI automation, API testing, test-data management, reporting, cross-browser testing, and CI/CD integration.
+
+---
+
+## 📁 Project Structure
+
+```text
 playwright-automation/
 │
 ├── tests/
@@ -40,44 +49,202 @@ playwright-automation/
 └── .github/
     └── workflows/
         └── playwright.yml
-
-2. Page Object Model (POM)
-Encapsulate page interactions into reusable classes
-Change existing tests to follow page object model
-Example: `searchPage.search(keyword)`
-
-3. Test Data Management
-JSON or CSV files for static data (search keywords like JS, TS)
-Dynamic data generation with libraries like Faker
-
-4. Custom Commands & Utilities
-Wrap repetitive actions (e.g. search)
-Utility functions for today date, wait, date conversions, etc.
-
-5. Configuration & Environment Setup
-Update config file (e.g., 'playwright.config.ts')
-Support for multiple env (dev, staging, prod) using .env
-Update package.json with required dependencies like .env
-
-6. Reporting
-Configure HTML reports using Allure in playwright config
-Configure Screenshots & video recordings on failure
-
-7. CI/CD Integration
-Create GitHub Actions workflow (.yml) - Jenkins /  Azure DevOps
-Automate testing on push, PRs, or nightly runs
-
-8. Hooks & Fixtures
-Setup/teardown logic before/after tests
-Custom fixtures for login states, mock data, etc.
-
-9. Cross-Browser Testing
-Enable Chromium, Firefox, and WebKit support
-Run tests in parallel across different browsers
+```
 
 ---
-Bonus Add-ons
 
-**Code coverage**: Useful for auditing front-end test quality
-**API testing integration**: Using Playwright’s `request` context
-**Performance testing**: Add Lighthouse checks or use metrics API
+# 1. Framework Overview
+
+This framework uses **Playwright with JavaScript** and follows industry-standard automation practices.
+
+### Key Features
+
+- Page Object Model (POM)
+- Reusable page classes
+- JSON/Excel test-data management
+- Dynamic test-data generation
+- Custom utilities
+- Multiple environment support
+- `.env` configuration
+- HTML and Allure reporting
+- Screenshots and video on failure
+- API testing using Playwright Request
+- Custom fixtures
+- Hooks and test lifecycle management
+- Chromium, Firefox, and WebKit testing
+- Parallel execution
+- GitHub Actions CI/CD
+- Jenkins/Azure DevOps integration capability
+- API mocking
+- Performance testing integration
+- AI-assisted test development
+
+---
+
+# 2. Page Object Model (POM)
+
+The framework follows the **Page Object Model design pattern**.
+
+Page-specific locators and actions are encapsulated inside reusable page classes.
+
+### Example
+
+```javascript
+// pages/SearchPage.js
+
+class SearchPage {
+
+    constructor(page) {
+        this.page = page;
+        this.searchBox = page.getByPlaceholder('Search');
+        this.searchButton = page.getByRole('button', {
+            name: 'Search'
+        });
+    }
+
+    async search(keyword) {
+        await this.searchBox.fill(keyword);
+        await this.searchButton.click();
+    }
+}
+
+module.exports = { SearchPage };
+```
+
+The test can then use:
+
+```javascript
+await searchPage.search('JavaScript');
+```
+
+### Benefits
+
+- Reduces code duplication
+- Improves maintainability
+- Separates test logic from UI implementation
+- Makes locator maintenance easier
+- Allows reusable business actions
+- Improves readability of test cases
+
+---
+
+# 3. Test Data Management
+
+Test data is maintained separately from test scripts.
+
+Supported data sources include:
+
+- JSON
+- CSV
+- Excel
+- Environment variables
+- Dynamically generated data
+
+### Example JSON
+
+```json
+{
+    "validUser": {
+        "username": "testuser",
+        "password": "Password123"
+    },
+    "invalidUser": {
+        "username": "invaliduser",
+        "password": "InvalidPassword"
+    }
+}
+```
+
+Tests can consume the data without hard-coding values.
+
+```javascript
+const loginData = require('../test-data/loginData.json');
+
+await loginPage.login(
+    loginData.validUser.username,
+    loginData.validUser.password
+);
+```
+
+---
+
+## Dynamic Test Data
+
+Dynamic test data can be generated using libraries such as:
+
+```bash
+npm install @faker-js/faker
+```
+
+Example:
+
+```javascript
+const { faker } = require('@faker-js/faker');
+
+const email = faker.internet.email();
+const firstName = faker.person.firstName();
+const lastName = faker.person.lastName();
+```
+
+This is useful for:
+
+- User registration
+- Customer creation
+- Orders
+- Addresses
+- Random search data
+- Negative testing
+
+---
+
+# 4. Custom Commands & Utilities
+
+Reusable functions are placed under the `utils` directory.
+
+```text
+utils/
+├── excelReader.js
+├── apiUtils.js
+├── dateUtils.js
+├── fileUtils.js
+└── logger.js
+```
+
+### Example
+
+Instead of repeating date calculations throughout the framework:
+
+```javascript
+const today = getTodayDate();
+```
+
+A utility can provide:
+
+```javascript
+function getTodayDate() {
+    return new Date().toISOString().split('T')[0];
+}
+
+module.exports = { getTodayDate };
+```
+
+### Utilities can handle
+
+- Date generation
+- Date conversion
+- Excel reading
+- File operations
+- API requests
+- Logging
+- Random data
+- Common waits
+- Screenshot handling
+- JSON processing
+
+---
+
+# 5. Configuration & Environment Setup
+
+The framework supports multiple environments.
+
+Example
