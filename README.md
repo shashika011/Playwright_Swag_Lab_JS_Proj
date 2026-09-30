@@ -1,199 +1,202 @@
-# Playwright Automation Framework
+# Playwright JavaScript Test Framework
 
-A scalable **Playwright JavaScript automation framework** designed for web UI automation, API testing, test-data management, reporting, cross-browser testing, and CI/CD integration.
+This project is a Playwright JavaScript automation framework for web UI testing. It is organized around the Page Object Model, reusable fixtures and utilities, external test data, environment configuration, reporting, and CI/CD execution.
 
----
+## Framework Requirements
 
-## 📁 Project Structure
+The framework includes:
+
+- A clear and maintainable folder structure
+- Page Object Model (POM)
+- Test data stored outside test scripts
+- Reusable utility functions
+- Environment and configuration support
+- Logging and test reporting
+- CI/CD execution support
+- Playwright features such as browser projects, retries, parallel workers, traces, screenshots, and videos
+
+## Project Structure
 
 ```text
-playwright-automation/
-│
+Playwright_Js_SwagLab/
 ├── tests/
 │   ├── login/
 │   │   └── login.spec.js
-│   ├── purchase/
-│   │   └── purchase.spec.js
-│   └── ...
-│
+│   └── purchase/
+│       └── purchase.spec.js
 ├── pages/
-│   ├── LoginPage.js
-│   ├── HomePage.js
 │   ├── CartPage.js
-│   └── CheckoutPage.js
-│
+│   ├── CheckoutPage.js
+│   ├── HomePage.js
+│   ├── LoginPage.js
+│   └── Test01.js
 ├── fixtures/
 │   └── testFixtures.js
-│
 ├── utils/
-│   ├── excelReader.js
-│   ├── apiUtils.js
 │   ├── dateUtils.js
 │   ├── fileUtils.js
 │   └── logger.js
-│
 ├── test-data/
 │   ├── loginData.json
-│   ├── users.json
-│   └── testData.xlsx
-│
+│   └── users.json
 ├── config/
 │   ├── qa.config.js
 │   └── staging.config.js
-│
 ├── playwright.config.js
 ├── package.json
-├── .env
-├── .gitignore
-│
-└── .github/
-    └── workflows/
-        └── playwright.yml
+├── framework.js
+└── framework.md
 ```
 
----
+## Page Object Model
 
-# 1. Framework Overview
+Page objects keep locators and page actions together. Tests use business actions instead of duplicating selector and interaction logic.
 
-This framework uses **Playwright with JavaScript** and follows industry-standard automation practices.
+```js
+export class LoginPage {
+  constructor(page) {
+    this.page = page;
+    this.usernameInput = page.getByLabel('Username');
+    this.passwordInput = page.getByLabel('Password');
+    this.loginButton = page.getByRole('button', { name: 'Log in' });
+  }
 
-### Key Features
-
-- Page Object Model (POM)
-- Reusable page classes
-- JSON/Excel test-data management
-- Dynamic test-data generation
-- Custom utilities
-- Multiple environment support
-- `.env` configuration
-- HTML and Allure reporting
-- Screenshots and video on failure
-- API testing using Playwright Request
-- Custom fixtures
-- Hooks and test lifecycle management
-- Chromium, Firefox, and WebKit testing
-- Parallel execution
-- GitHub Actions CI/CD
-- Jenkins/Azure DevOps integration capability
-- API mocking
-- Performance testing integration
-- AI-assisted test development
-
----
-
-# 2. Page Object Model (POM)
-
-The framework follows the **Page Object Model design pattern**.
-
-Page-specific locators and actions are encapsulated inside reusable page classes.
-
-### Example
-
-```javascript
-// pages/SearchPage.js
-
-class SearchPage {
-
-    constructor(page) {
-        this.page = page;
-        this.searchBox = page.getByPlaceholder('Search');
-        this.searchButton = page.getByRole('button', {
-            name: 'Search'
-        });
-    }
-
-    async search(keyword) {
-        await this.searchBox.fill(keyword);
-        await this.searchButton.click();
-    }
-}
-
-module.exports = { SearchPage };
-```
-
-The test can then use:
-
-```javascript
-await searchPage.search('JavaScript');
-```
-
-### Benefits
-
-- Reduces code duplication
-- Improves maintainability
-- Separates test logic from UI implementation
-- Makes locator maintenance easier
-- Allows reusable business actions
-- Improves readability of test cases
-
----
-
-# 3. Test Data Management
-
-Test data is maintained separately from test scripts.
-
-Supported data sources include:
-
-- JSON
-- CSV
-- Excel
-- Environment variables
-- Dynamically generated data
-
-### Example JSON
-
-```json
-{
-    "validUser": {
-        "username": "testuser",
-        "password": "Password123"
-    },
-    "invalidUser": {
-        "username": "invaliduser",
-        "password": "InvalidPassword"
-    }
+  async login(username, password) {
+    await this.usernameInput.fill(username);
+    await this.passwordInput.fill(password);
+    await this.loginButton.click();
+  }
 }
 ```
 
-Tests can consume the data without hard-coding values.
+Benefits include reduced duplication, simpler locator maintenance, reusable workflows, and more readable tests.
 
-```javascript
-const loginData = require('../test-data/loginData.json');
+## External Test Data
+
+Test data is maintained in `test-data/` instead of being embedded in test logic.
+
+```js
+import loginData from '../../test-data/loginData.json' with { type: 'json' };
 
 await loginPage.login(
-    loginData.validUser.username,
-    loginData.validUser.password
+  loginData.validUser.username,
+  loginData.validUser.password,
 );
 ```
 
----
+JSON files are currently supported. Additional data sources such as CSV or Excel can be added through utilities when required.
 
-## Dynamic Test Data
+## Fixtures
 
-Dynamic test data can be generated using libraries such as:
+`fixtures/testFixtures.js` extends Playwright's test object with reusable page objects such as `homePage`, `loginPage`, and `test01`.
 
-```bash
-npm install @faker-js/faker
+```js
+import { test, expect } from '../../fixtures/testFixtures.js';
+
+test('user can log in', async ({ loginPage }) => {
+  await loginPage.login('username', 'password');
+});
 ```
+
+Fixtures provide a consistent setup point for page objects, authentication, test data, and shared test context.
+
+## Utilities
+
+Reusable helper functions belong in `utils/`. The framework currently includes date, file, and logging utilities.
 
 Example:
 
-```javascript
-const { faker } = require('@faker-js/faker');
+```js
+import { getTodayDate } from '../utils/dateUtils.js';
 
-const email = faker.internet.email();
-const firstName = faker.person.firstName();
-const lastName = faker.person.lastName();
+const today = getTodayDate();
 ```
 
-This is useful for:
+Utilities should contain shared behavior rather than page-specific locators or assertions.
 
-- User registration
-- Customer creation
-- Orders
-- Addresses
-- Random search data
-- Negative testing
+## Configuration and Environments
 
----
+Environment-specific configuration is available through:
 
+- `config/qa.config.js`
+- `config/staging.config.js`
+- `playwright.config.js`
+
+The base URL can be supplied with the `BASE_URL` environment variable. When it is not supplied, the configuration uses its default URL.
+
+Example in PowerShell:
+
+```powershell
+$env:BASE_URL = 'https://qa.example.com'
+npm test
+```
+
+Environment files must not contain committed credentials or secrets. Keep local secret values in an ignored `.env` file or in CI/CD secret variables.
+
+## Playwright Configuration
+
+The main configuration provides:
+
+- `tests/` as the test directory
+- A 60-second test timeout
+- CI retries through `CI`
+- HTML reporting in `my-report/`
+- Screenshots and videos on failure
+- Traces on retry
+- A Chromium project enabled by default
+
+Playwright also supports Firefox, WebKit, parallel workers, and mobile projects. These are configured as projects in `playwright.config.js` when needed. The current configuration intentionally uses one worker, so tests run sequentially by default.
+
+## Logging and Reporting
+
+Test execution can be run with the list output and an HTML report. Failure artifacts are captured according to the Playwright configuration.
+
+```powershell
+npm test
+npm run report
+```
+
+Reports and generated artifacts should remain outside source control. Add report folders to `.gitignore` where appropriate.
+
+## CI/CD Integration
+
+The framework is designed to run in GitHub Actions, Jenkins, Azure DevOps, or another CI platform.
+
+A CI pipeline should:
+
+1. Check out the repository.
+2. Install Node.js dependencies with `npm ci`.
+3. Install Playwright browsers with `npx playwright install --with-deps`.
+4. Run `npm test`.
+5. Publish `my-report/` and failure artifacts.
+
+The `CI` environment variable enables retry behavior configured in `playwright.config.js`.
+
+## Common Commands
+
+```powershell
+npm install
+npx playwright install
+npm test
+npm run test:headed
+npm run test:qa
+npm run test:staging
+npx playwright test tests/login/login.spec.js
+npx playwright test --project=chromium
+npm run report
+```
+
+## Test Design Principles
+
+Tests should follow Arrange, Act, Assert and should be:
+
+- Independent and repeatable
+- Readable and maintainable
+- Based on page objects and fixtures
+- Driven by external test data
+- Free from unnecessary hard waits
+- Easy to diagnose through logs and Playwright artifacts
+
+## Future Extensions
+
+The framework can be extended with additional browser projects, API tests, API mocking, authentication state, database validation, visual regression, accessibility checks, and richer CI notifications. These capabilities should be added only when the project needs them and documented after implementation.
